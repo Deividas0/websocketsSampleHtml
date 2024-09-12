@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Demo</title>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@latest/dist/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <link rel="stylesheet" href="heyhey.css">
+</head>
+<body>
+    <h1>WebSocket Messages</h1>
+    <h3 id="laikas"></h3>
+
+    <label for="laiko-zona">Pasirinkite laiko zoną:</label>
+    <select name="zona" id="laiko-zona">
+    <option value="Europe/Amsterdam">Olandija</option>
+    <option value="Europe/Vilnius">Lietuva</option>
+    <option value="Europe/Berlin">Vokietija</option>
+    <option value="Asia/Tokyo">Japonija</option>
+</select>
+<button id="connect" onclick="sendTimeZone()">Connect</button>
+<br><br><br><br>
+
+    
+
+    <script>
+        var stompClient = null;
+
+        function connect() {
+            // Connect to the SockJS endpoint
+            var socket = new SockJS('http://localhost:8080/websocket');
+            stompClient = Stomp.over(socket);
+
+            // Connect to the STOMP server
+            stompClient.connect({}, function (frame) {
+                console.log('Connected: ' + frame);
+
+                // Subscribe to the /topic/heyhey endpoint
+                stompClient.subscribe('/topic/heyhey', function (message) {
+                    var x = document.getElementById("laikas");
+                    x.innerText = message.body;
+                    // showMessage(message.body);  // Display the received message
+                });
+            }, function (error) {
+                console.log('Error: ' + error);
+            });
+        }
+
+        // Display each received message in the DOM
+        function showMessage(message) {
+            var messageElement = document.createElement('p');
+            messageElement.innerText = message;
+            document.getElementById('messages').appendChild(messageElement);
+        }
+
+        // Connect to WebSocket on page load
+        window.onload = connect;
+    </script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script> 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+
+    <script type="text/javascript">
+
+        function sendTimeZone() {
+            var pasirinkimas = document.getElementById("laiko-zona").value;
+            stompClient.send("/app/hello", {}, pasirinkimas);
+        }
+    </script>
+    
+</body>
+</html>

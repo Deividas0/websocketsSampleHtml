@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@latest/dist/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <link rel="stylesheet" href="index.css">
+</head>
+<body>
+    <div id="joke"></div>
+    <div class="popup" >
+        <span class="popuptext" id="myPopup"></span>
+      </div>
+
+      <script>
+        var stompClient = null;
+
+        function connect() {
+            // Connect to the SockJS endpoint
+            var socket = new SockJS('http://localhost:8080/websocket');
+            stompClient = Stomp.over(socket);
+
+            // Connect to the STOMP server
+            stompClient.connect({}, function (frame) {
+                console.log('Connected: ' + frame);
+
+                // Subscribe to the /topic/joke endpoint
+                stompClient.subscribe('/topic/joke', function (joke) {
+                    // var x = document.getElementById("joke");
+                    // x.innerText = message.body;
+                    showJoke(joke);
+                });
+            }, function (error) {
+                console.log('Error: ' + error);
+            });
+        }
+
+        // Display each received message in the DOM
+        function showJoke(joke) {
+        
+            var jokeElement = document.createElement('p');
+            jokeElement.innerText = joke.body;
+            var a = document.getElementById('myPopup');
+            a.classList.toggle("show");
+            a.innerHTML = joke.body;
+            setTimeout(function() {
+    a.classList.remove("show");
+  }, 3000); 
+}
+
+        // Connect to WebSocket on page load
+        window.onload = connect;
+    </script>
+</body>
+</html>
